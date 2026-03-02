@@ -66,9 +66,28 @@ public class Patient {
         this.gender = gender;
     }
 
+    // UPDATE METHOD
+    public void updateDetails(
+            String fullName,
+            LocalDate dateOfBirth,
+            String email,
+            String phoneNumber,
+            Gender gender
+    ) {
+        validateDateOfBirth(dateOfBirth);
+
+        this.fullName = fullName.trim();
+        this.dateOfBirth = dateOfBirth;
+        this.email = normalizeEmail(email);
+        this.phoneNumber = phoneNumber;
+        this.gender = gender;
+    }
+
+
+
     private void validateDateOfBirth(LocalDate dob){
         if(dob.isAfter(LocalDate.now())){
-            throw new IllegalArgumentException("Date of birth can not be in futre");
+            throw new IllegalArgumentException("Date of birth can not be in future");
         }
         int age = Period.between(dob, LocalDate.now()).getYears();
         if(age>120){
@@ -80,28 +99,29 @@ public class Patient {
         return email.trim().toLowerCase();
     }
 
-    private Long getId(){
+    //GETTERS(READ ONLY)
+    public Long getId(){
         return id;
     }
 
-    private String getFullName(){
+    public String getFullName(){
         return fullName;
     }
 
-    private LocalDate getDateOfBirth(){
+    public LocalDate getDateOfBirth(){
         return dateOfBirth;
     }
 
-    private String getEmail(){
+    public String getEmail(){
         return email;
     }
 
-    private String getPhoneNumber(){
+    public String getPhoneNumber(){
         return phoneNumber;
     }
 
-    private Gender getGender(){
+    public Gender getGender(){
         return gender;
     }
-}
 
+}
