@@ -10,7 +10,6 @@ public class ErrorResponse {
     private final String error;
     private final String message;
     private final String path;
-    private final String traceId;
     private final Map<String, String> validationErrors;
 
     public ErrorResponse(
@@ -19,7 +18,6 @@ public class ErrorResponse {
             String error,
             String message,
             String path,
-            String traceId,
             Map<String, String> validationErrors
     ) {
         this.timeStamp = timeStamp;
@@ -27,7 +25,6 @@ public class ErrorResponse {
         this.error = error;
         this.message = message;
         this.path = path;
-        this.traceId = traceId;
         this.validationErrors = validationErrors;
     }
 
@@ -36,7 +33,6 @@ public class ErrorResponse {
     public String getError() { return error; }
     public String getMessage() { return message; }
     public String getPath() { return path; }
-    public String getTraceId() { return traceId; }
     public Map<String, String> getValidationErrors() { return validationErrors; }
 
 }
