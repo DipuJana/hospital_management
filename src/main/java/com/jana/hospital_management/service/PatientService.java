@@ -30,7 +30,7 @@ public class PatientService {
             Gender gender
     ){
         if(patientRepository.existsByEmail(email.toLowerCase())){
-            throw new IllegalArgumentException("Patient with this email already exists");
+            throw new DuplicateResourceException("Patient with this email already exists");
         }
 
         Patient patient = new Patient(
