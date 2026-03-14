@@ -27,6 +27,10 @@ public class PatientRequestDTO {
     @NotNull(message = "Gender is required")
     private Gender gender;
 
+    //Default constructor
+    public PatientRequestDTO(){
+    }
+
     //GETTERS
 
     public String getFullName(){
@@ -47,5 +51,27 @@ public class PatientRequestDTO {
 
     public Gender getGender() {
         return gender;
+    }
+
+    //SETTERS
+
+    public void setFullName(String fullName){
+        this.fullName = fullName;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth){
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public void setEmail(String email){
+        this.email = email;
+    }
+
+    public void setPhoneNumber(String phoneNumber){
+        this.phoneNumber = phoneNumber;
+    }
+
+    public void setGender(Gender gender){
+        this.gender = gender;
     }
 }
