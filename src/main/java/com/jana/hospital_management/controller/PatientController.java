@@ -1,6 +1,7 @@
 package com.jana.hospital_management.controller;
 
-import com.jana.hospital_management.entity.Patient;
+import com.jana.hospital_management.dto.PatientRequestDTO;
+import com.jana.hospital_management.dto.PatientResponseDTO;
 import com.jana.hospital_management.service.PatientService;
 
 import jakarta.validation.Valid;
@@ -21,45 +22,32 @@ public class PatientController {
 
     //CREATE
     @PostMapping
-    public ResponseEntity<Patient> createPatient(@Valid @RequestBody Patient patient){
-        Patient saved = patientService.createPatient(
-                patient.getFullName(),
-                patient.getDateOfBirth(),
-                patient.getEmail(),
-                patient.getPhoneNumber(),
-                patient.getGender()
-        );
+    public ResponseEntity<PatientResponseDTO> createPatient(@Valid @RequestBody PatientRequestDTO request){
+        PatientResponseDTO saved = patientService.createPatient(request);
         return ResponseEntity.status(201).body(saved);
     }
 
     //GET BY ID
     @GetMapping("/{id}")
-    public ResponseEntity<Patient> getPatientById(@PathVariable Long id){
+    public ResponseEntity<PatientResponseDTO> getPatientById(@PathVariable Long id){
         return ResponseEntity.ok(patientService.getPatientById(id));
     }
 
     //GET ALL
     @GetMapping
-    public ResponseEntity<List<Patient>> getAllPatients(){
+    public ResponseEntity<List<PatientResponseDTO>> getAllPatients(){
         return ResponseEntity.ok(patientService.getAllPatients());
     }
 
     //UPDATE
     @PutMapping("/{id}")
-    public ResponseEntity<Patient> updatePatient(
+    public ResponseEntity<PatientResponseDTO> updatePatient(
             @PathVariable Long id,
-            @Valid @RequestBody Patient patient
+            @Valid @RequestBody PatientRequestDTO request
     ) {
 
-        Patient updated = patientService.updatePatient(
-                id,
-                patient.getFullName(),
-                patient.getDateOfBirth(),
-                patient.getEmail(),
-                patient.getPhoneNumber(),
-                patient.getGender()
-        );
-        return ResponseEntity.ok(updated);
+
+        return ResponseEntity.ok(patientService.updatePatient(id, request));
     }
 
     //DELETE
