@@ -1,5 +1,6 @@
 package com.jana.hospital_management.controller;
 
+import com.jana.hospital_management.dto.PageResponse;
 import com.jana.hospital_management.dto.PatientRequestDTO;
 import com.jana.hospital_management.dto.PatientResponseDTO;
 import com.jana.hospital_management.service.PatientService;
@@ -7,8 +8,6 @@ import com.jana.hospital_management.service.PatientService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/patients")
@@ -35,8 +34,14 @@ public class PatientController {
 
     //GET ALL
     @GetMapping
-    public ResponseEntity<List<PatientResponseDTO>> getAllPatients(){
-        return ResponseEntity.ok(patientService.getAllPatients());
+    public ResponseEntity<PageResponse<PatientResponseDTO>> getAllPatients(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction
+    ){
+        PageResponse<PatientResponseDTO> response = patientService.getAllPatients(page, size, sortBy, direction);
+        return ResponseEntity.ok(response);
     }
 
     //UPDATE
