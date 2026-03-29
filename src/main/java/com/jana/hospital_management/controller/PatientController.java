@@ -1,6 +1,7 @@
 package com.jana.hospital_management.controller;
 
 import com.jana.hospital_management.dto.PageResponse;
+import com.jana.hospital_management.dto.PatientFilterRequest;
 import com.jana.hospital_management.dto.PatientRequestDTO;
 import com.jana.hospital_management.dto.PatientResponseDTO;
 import com.jana.hospital_management.service.PatientService;
@@ -35,12 +36,13 @@ public class PatientController {
     //GET ALL
     @GetMapping
     public ResponseEntity<PageResponse<PatientResponseDTO>> getAllPatients(
+            @ModelAttribute PatientFilterRequest filter,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String direction
     ){
-        PageResponse<PatientResponseDTO> response = patientService.getAllPatients(page, size, sortBy, direction);
+        PageResponse<PatientResponseDTO> response = patientService.getAllPatients(filter, page, size, sortBy, direction);
         return ResponseEntity.ok(response);
     }
 
