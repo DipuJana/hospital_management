@@ -3,17 +3,20 @@ package com.jana.hospital_management.service;
 import com.jana.hospital_management.dto.PageResponse;
 import com.jana.hospital_management.dto.PatientRequestDTO;
 import com.jana.hospital_management.dto.PatientResponseDTO;
+import com.jana.hospital_management.entity.Gender;
 import com.jana.hospital_management.entity.Patient;
 import com.jana.hospital_management.exception.DuplicateResourceException;
 import com.jana.hospital_management.repository.PatientRepository;
 import com.jana.hospital_management.exception.ResourceNotFoundException;
-
+import com.jana.hospital_management.dto.PatientFilterRequest;
 import java.util.Set;
 
+import com.jana.hospital_management.specification.PatientSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,6 +73,7 @@ public class PatientService {
     //GET ALL
     @Transactional(readOnly = true)
     public PageResponse<PatientResponseDTO> getAllPatients(
+            PatientFilterRequest filter,
             int page,
             int size,
             String sortBy,
@@ -104,7 +108,16 @@ public class PatientService {
                 Sort.by(sortDirection, sortBy)
         );
 
-        Page<PatientResponseDTO> pageResult = patientRepository.findAll(pageable).map(this::mapToDTO);
+        // Filter Extraction
+        String name = filter != null ? filter.getName() : null;
+        String email = filter != null ? filter.getEmail() : null;
+        Gender gender = filter != null ? filter.getGender() : null;
+
+        // Specification
+        Specification<Patient> spec = PatientSpecification.withFilters(name, email, gender);
+
+        // Query
+        Page<PatientResponseDTO> pageResult = patientRepository.findAll(spec, pageable).map(this::mapToDTO);
 
         return new PageResponse<>(pageResult);
     }
