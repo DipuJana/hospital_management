@@ -6,12 +6,12 @@ import java.time.LocalDate;
 
 public class PatientResponseDTO {
 
-    private final Long id;
-    private final String fullName;
-    private final LocalDate dateOfBirth;
-    private final String email;
-    private final String phoneNumber;
-    private final Gender gender;
+    private Long id;
+    private String fullName;
+    private LocalDate dateOfBirth;
+    private String email;
+    private String phoneNumber;
+    private Gender gender;
 
     public PatientResponseDTO(
             Long id,
@@ -29,6 +29,10 @@ public class PatientResponseDTO {
         this.gender = gender;
     }
 
+    //Default constructor
+    public PatientResponseDTO() { }
+
+    //GETTERS
     public Long getId(){
         return id;
     }
@@ -51,5 +55,30 @@ public class PatientResponseDTO {
 
     public Gender getGender() {
         return gender;
+    }
+
+    //SETTERS
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public void setGender(Gender gender) {
+        this.gender = gender;
     }
 }
