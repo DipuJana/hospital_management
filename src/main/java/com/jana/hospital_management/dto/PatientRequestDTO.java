@@ -1,10 +1,7 @@
 package com.jana.hospital_management.dto;
 
 import com.jana.hospital_management.entity.Gender;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
 
@@ -22,6 +19,7 @@ public class PatientRequestDTO {
     private String email;
 
     @NotBlank(message = "Phone number is required")
+    @Pattern(regexp = "^[0-9]{10}$", message = "Invalid phone number")
     private String phoneNumber;
 
     @NotNull(message = "Gender is required")
