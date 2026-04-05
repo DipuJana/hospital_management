@@ -2,10 +2,7 @@ package com.jana.hospital_management.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -38,6 +35,7 @@ public class Patient {
     private String email;
 
     @NotBlank
+    @Pattern(regexp = "^[0-9]{10}$", message = "Invalid phone number")
     @Column(nullable = false, length = 15)
     private  String phoneNumber;
 
