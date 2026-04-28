@@ -31,7 +31,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     );
 
     // 2. Get appointments of a doctor in a time range
-    List<Appointment> findByDoctorAndAppointmentDateTimeBetween(
+    List<Appointment> findByDoctorAndAppointmentDateTimeBetweenAndStatus(
             Doctor doctor,
             LocalDateTime start,
             LocalDateTime end,
@@ -39,7 +39,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     );
 
     // 3. Get appointment of a patient in a time range
-    List<Appointment> findByPatientAndAppointmentDateTimeBetween(
+    List<Appointment> findByPatientAndAppointmentDateTimeBetweenAndStatus(
             Patient patient,
             LocalDateTime start,
             LocalDateTime end,
