@@ -2,18 +2,30 @@ package com.jana.hospital_management.service;
 
 import com.jana.hospital_management.dto.AppointmentRequestDTO;
 import com.jana.hospital_management.dto.AppointmentResponseDTO;
+import com.jana.hospital_management.dto.PageResponse;
 import com.jana.hospital_management.entity.*;
-import com.jana.hospital_management.exception.ResourceNotFoundException;
-import com.jana.hospital_management.repository.*;
 import com.jana.hospital_management.exception.ConflictException;
+import com.jana.hospital_management.exception.ResourceNotFoundException;
+import com.jana.hospital_management.repository.AppointmentRepository;
+import com.jana.hospital_management.repository.DoctorRepository;
+import com.jana.hospital_management.repository.PatientRepository;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.Set;
+
 @Service
 public class AppointmentService {
+
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
+            "id",
+            "appointmentDateTime",
+            "status",
+            "reason"
+    );
 
     private final AppointmentRepository appointmentRepository;
     private final PatientRepository patientRepository;
@@ -29,24 +41,31 @@ public class AppointmentService {
         this.doctorRepository = doctorRepository;
     }
 
-    // 1. Create Appointment
+    // =========================
+    // Create Appointment
+    // =========================
+
     @Transactional
-    public AppointmentResponseDTO createAppointment(AppointmentRequestDTO request){
+    public AppointmentResponseDTO createAppointment(AppointmentRequestDTO request) {
 
         Patient patient = patientRepository.findById(request.getPatientId())
-                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with id " + request.getPatientId()));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Patient not found with id " + request.getPatientId()));
 
         Doctor doctor = doctorRepository.findById(request.getDoctorId())
-                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id " + request.getDoctorId()));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Doctor not found with id " + request.getDoctorId()));
 
-        boolean isBooked = appointmentRepository
-                .existsByDoctorAndAppointmentDateTimeAndStatus(
+        boolean isBooked =
+                appointmentRepository.existsByDoctorAndAppointmentDateTimeAndStatus(
                         doctor,
                         request.getAppointmentDateTime(),
                         AppointmentStatus.SCHEDULED
                 );
 
-        if(isBooked){
+        if (isBooked) {
             throw new ConflictException("Doctor already booked at this time");
         }
 
@@ -62,52 +81,72 @@ public class AppointmentService {
         return mapToDTO(saved);
     }
 
-    // 2. Cancel Appointment
+    // =========================
+    // Cancel Appointment
+    // =========================
+
     @Transactional
-    public AppointmentResponseDTO cancelAppointment(Long appointmentId){
+    public AppointmentResponseDTO cancelAppointment(Long appointmentId) {
+
         Appointment appointment = appointmentRepository.findById(appointmentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with id " + appointmentId));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Appointment not found with id " + appointmentId));
 
         appointment.cancel();
 
         return mapToDTO(appointment);
     }
 
-    // 3. Complete Appointment
+    // =========================
+    // Complete Appointment
+    // =========================
+
     @Transactional
-    public AppointmentResponseDTO completeAppointment(Long appointmentId){
+    public AppointmentResponseDTO completeAppointment(Long appointmentId) {
+
         Appointment appointment = appointmentRepository.findById(appointmentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with id " + appointmentId));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Appointment not found with id " + appointmentId));
 
         appointment.complete();
 
         return mapToDTO(appointment);
     }
 
-    // 4. Reschedule
+    // =========================
+    // Reschedule Appointment
+    // =========================
+
     @Transactional
     public AppointmentResponseDTO rescheduleAppointment(
             Long appointmentId,
-            java.time.LocalDateTime newDateTime
-
-    ){
+            LocalDateTime newDateTime
+    ) {
 
         if (newDateTime == null) {
-            throw new IllegalArgumentException("New appointment time cannot be null");
+            throw new IllegalArgumentException(
+                    "New appointment time cannot be null");
         }
 
         Appointment appointment = appointmentRepository.findById(appointmentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with id " + appointmentId));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Appointment not found with id " + appointmentId));
 
-        boolean isBooked = appointmentRepository.existsByDoctorAndAppointmentDateTimeAndStatusAndIdNot(
-                appointment.getDoctor(),
-                newDateTime,
-                AppointmentStatus.SCHEDULED,
-                appointment.getId()
-        );
+        boolean isBooked =
+                appointmentRepository
+                        .existsByDoctorAndAppointmentDateTimeAndStatusAndIdNot(
+                                appointment.getDoctor(),
+                                newDateTime,
+                                AppointmentStatus.SCHEDULED,
+                                appointment.getId()
+                        );
 
-        if(isBooked){
-            throw new ConflictException("Doctor already booked at this time.");
+        if (isBooked) {
+            throw new ConflictException(
+                    "Doctor already booked at this time");
         }
 
         appointment.reschedule(newDateTime);
@@ -115,33 +154,116 @@ public class AppointmentService {
         return mapToDTO(appointment);
     }
 
-    // Get by Patient
-    @Transactional(readOnly = true)
-    public Page<AppointmentResponseDTO> getAppointmentsByPatient(
-            Long patientID,
-            Pageable pageable
-    ) {
-        Patient patient = patientRepository.findById(patientID)
-                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with id " + patientID));
+    // =========================
+    // Get Appointments By Patient
+    // =========================
 
-        return appointmentRepository.findByPatient(patient, pageable)
-                .map(this::mapToDTO);
+    @Transactional(readOnly = true)
+    public PageResponse<AppointmentResponseDTO> getAppointmentsByPatient(
+            Long patientId,
+            int page,
+            int size,
+            String sortBy,
+            String direction
+    ) {
+
+        Patient patient = patientRepository.findById(patientId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Patient not found with id " + patientId));
+
+        Pageable pageable =
+                createPageable(page, size, sortBy, direction);
+
+        Page<AppointmentResponseDTO> pageResult =
+                appointmentRepository
+                        .findByPatient(patient, pageable)
+                        .map(this::mapToDTO);
+
+        return new PageResponse<>(pageResult);
     }
 
-    // Get by Doctor
-    @Transactional(readOnly = true)
-    public Page<AppointmentResponseDTO> getAppointmentsByDoctor(
-            Long doctorID,
-            Pageable pageable
-    ) {
-        Doctor doctor = doctorRepository.findById(doctorID)
-                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id " + doctorID));
+    // =========================
+    // Get Appointments By Doctor
+    // =========================
 
-        return appointmentRepository.findByDoctor(doctor, pageable)
-                .map(this::mapToDTO);
+    @Transactional(readOnly = true)
+    public PageResponse<AppointmentResponseDTO> getAppointmentsByDoctor(
+            Long doctorId,
+            int page,
+            int size,
+            String sortBy,
+            String direction
+    ) {
+
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Doctor not found with id " + doctorId));
+
+        Pageable pageable =
+                createPageable(page, size, sortBy, direction);
+
+        Page<AppointmentResponseDTO> pageResult =
+                appointmentRepository
+                        .findByDoctor(doctor, pageable)
+                        .map(this::mapToDTO);
+
+        return new PageResponse<>(pageResult);
     }
 
-    private AppointmentResponseDTO mapToDTO(Appointment a){
+    // =========================
+    // Pagination Helper
+    // =========================
+
+    private Pageable createPageable(
+            int page,
+            int size,
+            String sortBy,
+            String direction
+    ) {
+
+        if (page < 0) {
+            throw new IllegalArgumentException(
+                    "Page number cannot be negative");
+        }
+
+        if (size <= 0 || size > 50) {
+            throw new IllegalArgumentException(
+                    "Page size must be between 1 and 50");
+        }
+
+        if (!ALLOWED_SORT_FIELDS.contains(sortBy)) {
+            throw new IllegalArgumentException(
+                    "Invalid sort field: "
+                            + sortBy
+                            + ". Allowed fields: "
+                            + ALLOWED_SORT_FIELDS);
+        }
+
+        Sort.Direction sortDirection;
+
+        try {
+            sortDirection =
+                    Sort.Direction.fromString(direction.trim());
+        } catch (Exception ex) {
+            throw new IllegalArgumentException(
+                    "Invalid sort direction: " + direction);
+        }
+
+        return PageRequest.of(
+                page,
+                size,
+                Sort.by(sortDirection, sortBy)
+        );
+    }
+
+    // =========================
+    // DTO Mapper
+    // =========================
+
+    private AppointmentResponseDTO mapToDTO(Appointment a) {
+
         return new AppointmentResponseDTO(
                 a.getId(),
                 a.getPatient().getId(),
@@ -153,5 +275,4 @@ public class AppointmentService {
                 a.getReason()
         );
     }
-
 }

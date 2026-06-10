@@ -2,6 +2,7 @@ package com.jana.hospital_management.controller;
 
 import com.jana.hospital_management.dto.AppointmentRequestDTO;
 import com.jana.hospital_management.dto.AppointmentResponseDTO;
+import com.jana.hospital_management.dto.PageResponse;
 import com.jana.hospital_management.service.AppointmentService;
 
 import jakarta.validation.Valid;
@@ -22,72 +23,94 @@ public class AppointmentController {
 
     private final AppointmentService appointmentService;
 
-    public AppointmentController(AppointmentService appointmentService){
+    public AppointmentController(AppointmentService appointmentService) {
         this.appointmentService = appointmentService;
     }
 
-    // 1. Create Appointment
+    // Create Appointment
     @PostMapping
     public ResponseEntity<AppointmentResponseDTO> createAppointment(
-            @Valid @RequestBody AppointmentRequestDTO request){
-        AppointmentResponseDTO response = appointmentService.createAppointment(request);
+            @Valid @RequestBody AppointmentRequestDTO request
+    ) {
+
+        AppointmentResponseDTO response =
+                appointmentService.createAppointment(request);
 
         return ResponseEntity
                 .created(URI.create("/api/appointments/" + response.getId()))
                 .body(response);
     }
 
-    // 2. Cancel Appointment
+    // Cancel Appointment
     @PatchMapping("/{id}/cancel")
     public ResponseEntity<AppointmentResponseDTO> cancelAppointment(
             @PathVariable Long id
-    ){
+    ) {
         return ResponseEntity.ok(
                 appointmentService.cancelAppointment(id)
         );
     }
 
-    // 3. Complete Appointment
+    // Complete Appointment
     @PatchMapping("/{id}/complete")
     public ResponseEntity<AppointmentResponseDTO> completeAppointment(
             @PathVariable Long id
-    ){
+    ) {
         return ResponseEntity.ok(
                 appointmentService.completeAppointment(id)
         );
     }
 
-    // 4. Reschedule Appointment
+    // Reschedule Appointment
     @PatchMapping("/{id}/reschedule")
     public ResponseEntity<AppointmentResponseDTO> rescheduleAppointment(
             @PathVariable Long id,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime newDateTime
-    ){
+            @RequestParam("newDateTime")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime newDateTime
+    ) {
         return ResponseEntity.ok(
                 appointmentService.rescheduleAppointment(id, newDateTime)
         );
     }
 
-    // 5.  Get Appointments by patients
+    // Get Appointments By Patient
     @GetMapping("/patients/{patientId}")
-    public ResponseEntity<Page<AppointmentResponseDTO>> getByPatient(
+    public ResponseEntity<PageResponse<AppointmentResponseDTO>> getByPatient(
             @PathVariable Long patientId,
-            @PageableDefault(size = 10, sort = "appointmentDateTime") Pageable pageable
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "appointmentDateTime") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction
     ) {
         return ResponseEntity.ok(
-                appointmentService.getAppointmentsByPatient(patientId,  pageable)
+                appointmentService.getAppointmentsByPatient(
+                        patientId,
+                        page,
+                        size,
+                        sortBy,
+                        direction
+                )
         );
     }
 
-    // 6. Get Appointments by doctors
+    // Get Appointments By Doctor
     @GetMapping("/doctors/{doctorId}")
-    public ResponseEntity<Page<AppointmentResponseDTO>> getByDoctor(
+    public ResponseEntity<PageResponse<AppointmentResponseDTO>> getByDoctor(
             @PathVariable Long doctorId,
-            @PageableDefault(size = 10, sort = "appointmentDateTime") Pageable pageable
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "appointmentDateTime") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction
     ) {
         return ResponseEntity.ok(
-                appointmentService.getAppointmentsByDoctor(doctorId,  pageable)
+                appointmentService.getAppointmentsByDoctor(
+                        doctorId,
+                        page,
+                        size,
+                        sortBy,
+                        direction
+                )
         );
     }
-
 }
