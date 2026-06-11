@@ -30,15 +30,18 @@ public class AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
+    private final PaginationService paginationService;
 
     public AppointmentService(
             AppointmentRepository appointmentRepository,
             PatientRepository patientRepository,
-            DoctorRepository doctorRepository
+            DoctorRepository doctorRepository,
+            PaginationService paginationService
     ) {
         this.appointmentRepository = appointmentRepository;
         this.patientRepository = patientRepository;
         this.doctorRepository = doctorRepository;
+        this.paginationService = paginationService;
     }
 
     // =========================
@@ -173,7 +176,13 @@ public class AppointmentService {
                                 "Patient not found with id " + patientId));
 
         Pageable pageable =
-                createPageable(page, size, sortBy, direction);
+                paginationService.createPageable(
+                        page,
+                        size,
+                        sortBy,
+                        direction,
+                        ALLOWED_SORT_FIELDS
+                );
 
         Page<AppointmentResponseDTO> pageResult =
                 appointmentRepository
@@ -202,7 +211,13 @@ public class AppointmentService {
                                 "Doctor not found with id " + doctorId));
 
         Pageable pageable =
-                createPageable(page, size, sortBy, direction);
+                paginationService.createPageable(
+                        page,
+                        size,
+                        sortBy,
+                        direction,
+                        ALLOWED_SORT_FIELDS
+                );
 
         Page<AppointmentResponseDTO> pageResult =
                 appointmentRepository
@@ -210,52 +225,6 @@ public class AppointmentService {
                         .map(this::mapToDTO);
 
         return new PageResponse<>(pageResult);
-    }
-
-    // =========================
-    // Pagination Helper
-    // =========================
-
-    private Pageable createPageable(
-            int page,
-            int size,
-            String sortBy,
-            String direction
-    ) {
-
-        if (page < 0) {
-            throw new IllegalArgumentException(
-                    "Page number cannot be negative");
-        }
-
-        if (size <= 0 || size > 50) {
-            throw new IllegalArgumentException(
-                    "Page size must be between 1 and 50");
-        }
-
-        if (!ALLOWED_SORT_FIELDS.contains(sortBy)) {
-            throw new IllegalArgumentException(
-                    "Invalid sort field: "
-                            + sortBy
-                            + ". Allowed fields: "
-                            + ALLOWED_SORT_FIELDS);
-        }
-
-        Sort.Direction sortDirection;
-
-        try {
-            sortDirection =
-                    Sort.Direction.fromString(direction.trim());
-        } catch (Exception ex) {
-            throw new IllegalArgumentException(
-                    "Invalid sort direction: " + direction);
-        }
-
-        return PageRequest.of(
-                page,
-                size,
-                Sort.by(sortDirection, sortBy)
-        );
     }
 
     // =========================

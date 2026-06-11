@@ -10,8 +10,6 @@ import com.jana.hospital_management.repository.DoctorRepository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +19,7 @@ import java.util.Set;
 public class DoctorService {
 
     private final DoctorRepository doctorRepository;
+    private final PaginationService paginationService;
 
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
             "id",
@@ -30,8 +29,12 @@ public class DoctorService {
             "phoneNumber"
     );
 
-    public DoctorService(DoctorRepository doctorRepository) {
+    public DoctorService(
+            DoctorRepository doctorRepository,
+            PaginationService paginationService
+    ) {
         this.doctorRepository = doctorRepository;
+        this.paginationService = paginationService;
     }
 
     // CREATE
@@ -79,39 +82,12 @@ public class DoctorService {
             String direction
     ) {
 
-        if (page < 0) {
-            throw new IllegalArgumentException(
-                    "Page number cannot be negative"
-            );
-        }
-
-        if (size <= 0 || size > 50) {
-            throw new IllegalArgumentException(
-                    "Page size must be between 1 and 50"
-            );
-        }
-
-        if (!ALLOWED_SORT_FIELDS.contains(sortBy)) {
-            throw new IllegalArgumentException(
-                    "Invalid sort field: " + sortBy +
-                            ". Allowed fields: " + ALLOWED_SORT_FIELDS
-            );
-        }
-
-        Sort.Direction sortDirection;
-
-        try {
-            sortDirection = Sort.Direction.fromString(direction.trim());
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalArgumentException(
-                    "Invalid sort direction: " + direction
-            );
-        }
-
-        Pageable pageable = PageRequest.of(
+        Pageable pageable = paginationService.createPageable(
                 page,
                 size,
-                Sort.by(sortDirection, sortBy)
+                sortBy,
+                direction,
+                ALLOWED_SORT_FIELDS
         );
 
         Page<DoctorResponseDTO> pageResult =
