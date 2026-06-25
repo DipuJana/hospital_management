@@ -1,7 +1,9 @@
 package com.jana.hospital_management.dto;
 
+import com.jana.hospital_management.entity.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record RegisterRequestDTO(
@@ -12,7 +14,8 @@ public record RegisterRequestDTO(
 
         @NotBlank(message = "Password is required")
         @Size(min = 6, max = 50, message = "Password must be between 6 and 50 characters")
-        String password
+        String password,
 
-        // Server assigns roles
+        @NotNull(message = "Role is required")
+        Role role
 ) {}
