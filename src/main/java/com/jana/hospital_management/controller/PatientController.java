@@ -8,6 +8,7 @@ import com.jana.hospital_management.service.PatientService;
 
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,6 +23,7 @@ public class PatientController {
 
     //CREATE
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST')")
     public ResponseEntity<PatientResponseDTO> createPatient(@Valid @RequestBody PatientRequestDTO request){
         PatientResponseDTO saved = patientService.createPatient(request);
         return ResponseEntity.status(201).body(saved);
@@ -29,12 +31,14 @@ public class PatientController {
 
     //GET BY ID
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST','DOCTOR')")
     public ResponseEntity<PatientResponseDTO> getPatientById(@PathVariable Long id){
         return ResponseEntity.ok(patientService.getPatientById(id));
     }
 
     //GET ALL
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST','DOCTOR')")
     public ResponseEntity<PageResponse<PatientResponseDTO>> getAllPatients(
             @ModelAttribute PatientFilterRequest filter,
             @RequestParam(defaultValue = "0") int page,
@@ -48,6 +52,7 @@ public class PatientController {
 
     //UPDATE
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST')")
     public ResponseEntity<PatientResponseDTO> updatePatient(
             @PathVariable Long id,
             @Valid @RequestBody PatientRequestDTO request
@@ -59,6 +64,7 @@ public class PatientController {
 
     //DELETE
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deletePatient(@PathVariable Long id){
         patientService.deletePatient(id);
 

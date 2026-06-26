@@ -7,6 +7,7 @@ import com.jana.hospital_management.service.DoctorService;
 
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,6 +22,7 @@ public class DoctorController {
 
     // CREATE
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DoctorResponseDTO> createDoctor(
             @Valid @RequestBody DoctorRequestDTO request
     ) {
@@ -33,6 +35,7 @@ public class DoctorController {
 
     // GET BY ID
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST','DOCTOR')")
     public ResponseEntity<DoctorResponseDTO> getDoctorById(
             @PathVariable Long id
     ) {
@@ -44,6 +47,7 @@ public class DoctorController {
 
     // GET ALL
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST','DOCTOR')")
     public ResponseEntity<PageResponse<DoctorResponseDTO>> getAllDoctors(
 
             @RequestParam(defaultValue = "0")
@@ -72,6 +76,7 @@ public class DoctorController {
 
     // UPDATE
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DoctorResponseDTO> updateDoctor(
 
             @PathVariable Long id,
@@ -87,6 +92,7 @@ public class DoctorController {
 
     // DELETE
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteDoctor(
             @PathVariable Long id
     ) {

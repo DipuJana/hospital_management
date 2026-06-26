@@ -12,6 +12,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -29,6 +30,7 @@ public class AppointmentController {
 
     // Create Appointment
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST')")
     public ResponseEntity<AppointmentResponseDTO> createAppointment(
             @Valid @RequestBody AppointmentRequestDTO request
     ) {
@@ -43,6 +45,7 @@ public class AppointmentController {
 
     // Cancel Appointment
     @PatchMapping("/{id}/cancel")
+    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST')")
     public ResponseEntity<AppointmentResponseDTO> cancelAppointment(
             @PathVariable Long id
     ) {
@@ -53,6 +56,7 @@ public class AppointmentController {
 
     // Complete Appointment
     @PatchMapping("/{id}/complete")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     public ResponseEntity<AppointmentResponseDTO> completeAppointment(
             @PathVariable Long id
     ) {
@@ -63,6 +67,7 @@ public class AppointmentController {
 
     // Reschedule Appointment
     @PatchMapping("/{id}/reschedule")
+    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST')")
     public ResponseEntity<AppointmentResponseDTO> rescheduleAppointment(
             @PathVariable Long id,
             @RequestParam("newDateTime")
@@ -76,6 +81,7 @@ public class AppointmentController {
 
     // Get Appointments By Patient
     @GetMapping("/patients/{patientId}")
+    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST','DOCTOR')")
     public ResponseEntity<PageResponse<AppointmentResponseDTO>> getByPatient(
             @PathVariable Long patientId,
             @RequestParam(defaultValue = "0") int page,
@@ -96,6 +102,7 @@ public class AppointmentController {
 
     // Get Appointments By Doctor
     @GetMapping("/doctors/{doctorId}")
+    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST','DOCTOR')")
     public ResponseEntity<PageResponse<AppointmentResponseDTO>> getByDoctor(
             @PathVariable Long doctorId,
             @RequestParam(defaultValue = "0") int page,
