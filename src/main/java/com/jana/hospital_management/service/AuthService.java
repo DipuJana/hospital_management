@@ -14,6 +14,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
 public class AuthService {
 
@@ -21,6 +24,9 @@ public class AuthService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+
+    private static final Logger logger =
+            LoggerFactory.getLogger(AuthService.class);
 
     public AuthService(
             AuthenticationManager authenticationManager,
@@ -38,6 +44,11 @@ public class AuthService {
     public void register(RegisterRequestDTO request) {
 
         if (userRepository.existsByEmail(request.email())) {
+
+            logger.warn(
+                    "Registration failed: email '{}' already exists.",
+                    request.email()
+            );
             throw new IllegalArgumentException(
                     "Email already exists"
             );
@@ -50,6 +61,12 @@ public class AuthService {
                 .build();
 
         userRepository.save(user);
+
+        logger.info(
+                "Created {} account for '{}'.",
+                user.getRole(),
+                user.getEmail()
+        );
     }
 
     @Transactional(readOnly = true)
@@ -65,19 +82,36 @@ public class AuthService {
             );
 
         } catch (AuthenticationException ex) {
+
+            logger.warn(
+                    "Failed login attempt for '{}'.",
+                    request.email()
+            );
             throw new IllegalArgumentException(
                     "Invalid email or password"
             );
         }
 
         User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "Invalid email or password"
-                        )
-                );
+                .orElseThrow(() -> {
+
+                    logger.error(
+                            "Authentication succeeded but user '{}' could not be found in the database.",
+                            request.email()
+                    );
+
+                    return new IllegalArgumentException(
+                            "Invalid email or password"
+                    );
+                });
 
         String token = jwtService.generateToken(user.getEmail());
+
+        logger.info(
+                "User '{}' logged in successfully with role {}.",
+                user.getEmail(),
+                user.getRole()
+        );
 
         return new AuthResponseDTO(
                 token, // JWT token comes later
