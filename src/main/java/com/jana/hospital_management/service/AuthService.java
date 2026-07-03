@@ -5,6 +5,7 @@ import com.jana.hospital_management.dto.LoginRequestDTO;
 import com.jana.hospital_management.dto.RegisterRequestDTO;
 import com.jana.hospital_management.entity.User;
 import com.jana.hospital_management.repository.UserRepository;
+import com.jana.hospital_management.exception.DuplicateResourceException;
 
 import com.jana.hospital_management.security.JwtService;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -49,7 +50,7 @@ public class AuthService {
                     "Registration failed: email '{}' already exists.",
                     request.email()
             );
-            throw new IllegalArgumentException(
+            throw new DuplicateResourceException(
                     "Email already exists"
             );
         }
