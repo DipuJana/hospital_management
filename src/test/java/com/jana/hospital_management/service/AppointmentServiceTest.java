@@ -523,4 +523,127 @@ class AppointmentServiceTest {
         verify(appointmentRepository, never())
                 .save(any(Appointment.class));
     }
+
+    @Test
+    void completeAppointment_ShouldThrowException_WhenAppointmentIsCancelled() {
+
+        appointment.cancel();
+
+        when(appointmentRepository.findById(1L))
+                .thenReturn(Optional.of(appointment));
+
+        IllegalStateException exception =
+                assertThrows(
+                        IllegalStateException.class,
+                        () -> appointmentService.completeAppointment(1L)
+                );
+
+        assertEquals(
+                "Only scheduled appointments can be completed.",
+                exception.getMessage()
+        );
+
+        verify(appointmentRepository)
+                .findById(1L);
+    }
+
+    @Test
+    void cancelAppointment_ShouldThrowException_WhenAppointmentIsCompleted() {
+
+        appointment.complete();
+
+        when(appointmentRepository.findById(1L))
+                .thenReturn(Optional.of(appointment));
+
+        IllegalStateException exception =
+                assertThrows(
+                        IllegalStateException.class,
+                        () -> appointmentService.cancelAppointment(1L)
+                );
+
+        assertEquals(
+                "Only scheduled appointments can be cancelled",
+                exception.getMessage()
+        );
+
+        verify(appointmentRepository)
+                .findById(1L);
+    }
+
+    @Test
+    void rescheduleAppointment_ShouldThrowException_WhenAppointmentIsCancelled() {
+
+        appointment.cancel();
+
+        when(appointmentRepository.findById(1L))
+                .thenReturn(Optional.of(appointment));
+
+        LocalDateTime newDateTime =
+                LocalDateTime.now().plusDays(2);
+
+        when(appointmentRepository
+                .existsByDoctorAndAppointmentDateTimeAndStatusAndIdNot(
+                        doctor,
+                        newDateTime,
+                        AppointmentStatus.SCHEDULED,
+                        1L
+                ))
+                .thenReturn(false);
+
+        IllegalStateException exception =
+                assertThrows(
+                        IllegalStateException.class,
+                        () -> appointmentService.rescheduleAppointment(
+                                1L,
+                                newDateTime
+                        )
+                );
+
+        assertEquals(
+                "Only scheduled appointments can be rescheduled.",
+                exception.getMessage()
+        );
+
+        verify(appointmentRepository)
+                .findById(1L);
+    }
+
+    @Test
+    void rescheduleAppointment_ShouldThrowException_WhenAppointmentIsCompleted() {
+
+        appointment.complete();
+
+        when(appointmentRepository.findById(1L))
+                .thenReturn(Optional.of(appointment));
+
+        LocalDateTime newDateTime =
+                LocalDateTime.now().plusDays(2);
+
+        when(appointmentRepository
+                .existsByDoctorAndAppointmentDateTimeAndStatusAndIdNot(
+                        doctor,
+                        newDateTime,
+                        AppointmentStatus.SCHEDULED,
+                        1L
+                ))
+                .thenReturn(false);
+
+        IllegalStateException exception =
+                assertThrows(
+                        IllegalStateException.class,
+                        () -> appointmentService.rescheduleAppointment(
+                                1L,
+                                newDateTime
+                        )
+                );
+
+        assertEquals(
+                "Only scheduled appointments can be rescheduled.",
+                exception.getMessage()
+        );
+
+        verify(appointmentRepository)
+                .findById(1L);
+    }
+
 }
