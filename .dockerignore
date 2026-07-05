@@ -1,0 +1,13 @@
+target/
+
+.git/
+.idea/
+.vscode/
+
+*.iml
+*.log
+
+logs/
+
+.postman/
+postman/
