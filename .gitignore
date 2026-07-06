@@ -45,3 +45,5 @@ postman/
 ### Logs ###
 logs/
 *.log
+
+.env
