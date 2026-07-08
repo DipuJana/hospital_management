@@ -1,5 +1,6 @@
 package com.jana.hospital_management.service;
 
+import com.jana.hospital_management.exception.DuplicateResourceException;
 import com.jana.hospital_management.repository.UserRepository;
 import com.jana.hospital_management.security.JwtService;
 import com.jana.hospital_management.dto.RegisterRequestDTO;
@@ -103,9 +104,9 @@ class AuthServiceTest {
                 .thenReturn(true);
 
         // Act + Assert
-        IllegalArgumentException exception =
+        DuplicateResourceException exception =
                 assertThrows(
-                        IllegalArgumentException.class,
+                        DuplicateResourceException.class,
                         () -> authService.register(request)
                 );
 
