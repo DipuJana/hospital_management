@@ -38,9 +38,8 @@ build/
 ### macOS ###
 .DS_Store
 
-### Postman (temporary) ###
+### Postman ###
 .postman/
-postman/
 
 ### Logs ###
 logs/
